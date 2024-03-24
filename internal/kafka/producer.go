@@ -7,7 +7,7 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
-func CreateProducer(topic string, data map[string]string) {
+func CreateProducer() (*kafka.Producer, error) {
 	if len(os.Args) != 2 {
 		fmt.Fprint(os.Stderr, "Usage: %s <config-file-path>\n", os.Args[0])
 		os.Exit(1)
@@ -21,22 +21,12 @@ func CreateProducer(topic string, data map[string]string) {
 		os.Exit(1)
 	}
 
-	go messageHanler(p)
+	go messageHandler(p)
 
-	for key, value := range data {
-		p.Produce(&kafka.Message{
-			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-			Key:            []byte(key),
-			Value:          []byte(value),
-		}, nil)
-	}
-
-	p.Flush(15 * 1000) // Wait for 15 seconds for the producer to finish
-	p.Close()
-
+	return p, nil
 }
 
-func messageHanler(p *kafka.Producer) {
+func messageHandler(p *kafka.Producer) {
 	for e := range p.Events() {
 		switch ev := e.(type) {
 		case *kafka.Message:

@@ -1,3 +1,5 @@
+Source: https://docs.confluent.io/kafka-clients/go/current/overview.html
+
 # Prerequisites
 Docker Desktop
 
@@ -36,3 +38,7 @@ Type Ctrl-C to terminate consumer application
 
 Shut down Kafka when you are done with it
 `confluent local kafka stop`
+
+
+# Nice to have
+Set up debugging in VS Code: https://github.com/golang/vscode-go/wiki/debugging

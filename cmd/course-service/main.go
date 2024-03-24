@@ -1,9 +1,9 @@
 package main
 
 import (
-	"evaluation-sys-kafka/pkg/courses"
+	"evaluation-sys-kafka/cmd/course-service/transport"
 )
 
 func main() {
-	courses.Run()
+	transport.Serve()
 }
