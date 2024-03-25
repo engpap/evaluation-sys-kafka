@@ -1,3 +1,6 @@
+Current flow:
+- Admin post a new course through Course Service. Course Service is the producer.
+- Student Service is the conusmer for the topic course. Course's data is replicated from the Course Service to the Student Service, where it can be queried locally. (see pag. 37)
 
 
 // Student Routes

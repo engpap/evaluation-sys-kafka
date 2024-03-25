@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/signal"
@@ -10,7 +11,7 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
-func CreateConsumer(topic string) {
+func CreateConsumer(topic string, output *[]interface{}) {
 	if len(os.Args) != 2 {
 		fmt.Fprint(os.Stderr, "Usage: %s <config-file-path>\n", os.Args[0])
 		os.Exit(1)
@@ -28,27 +29,43 @@ func CreateConsumer(topic string) {
 	}
 
 	c.SubscribeTopics([]string{topic}, nil)
-	// Set up a channel for handling Ctrl-C, etc
-	sigchan := make(chan os.Signal, 1)
-	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
-	// Process messages
+	SetupCloseConsumerHandler(c)
+
+	go consumerMessageHandler(c, output)
+}
+
+func consumerMessageHandler(c *kafka.Consumer, output *[]interface{}) {
 	run := true
 	for run {
-		select {
-		case sig := <-sigchan:
-			fmt.Printf("Caught signal %v: terminating\n", sig)
-			run = false
-		default:
-			ev, err := c.ReadMessage(100 * time.Millisecond)
-			if err != nil {
-				// Errors are informational and automatically handled by the consumer
-				continue
-			}
-			fmt.Printf("Consumed event from topic %s: key = %-10s value = %s\n",
-				*ev.TopicPartition.Topic, string(ev.Key), string(ev.Value))
+		ev, err := c.ReadMessage(100 * time.Millisecond)
+		if err != nil {
+			// Errors are informational and automatically handled by the consumer
+			continue
 		}
+		fmt.Printf("Consumed event from topic %s: key = %-10s value = %s\n",
+			*ev.TopicPartition.Topic, string(ev.Key), string(ev.Value))
+		// Convert JSON to map
+		var data interface{}
+		err = json.Unmarshal(ev.Value, &data)
+		if err != nil {
+			fmt.Printf("Failed to unmarshal data: %s", err)
+		}
+		// Append map data to output
+		*output = append(*output, data)
 	}
+}
 
-	c.Close()
+// Setup clean shutdown on Ctrl+C (SIGINT) or SIGTERM
+func SetupCloseConsumerHandler(consumer *kafka.Consumer) {
+	fmt.Println("Press Ctrl+C to exit.")
+	sigchan := make(chan os.Signal, 1)
+	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		sig := <-sigchan
+		fmt.Printf("Caught signal %v: terminating\n", sig)
+		consumer.Close()
+		fmt.Println("Kafka consumer closed.")
+		os.Exit(0)
+	}()
 }

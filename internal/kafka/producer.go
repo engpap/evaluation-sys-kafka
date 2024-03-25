@@ -3,6 +3,8 @@ package kafka
 import (
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
@@ -21,12 +23,12 @@ func CreateProducer() (*kafka.Producer, error) {
 		os.Exit(1)
 	}
 
-	go messageHandler(p)
+	go producerMessageHandler(p)
 
 	return p, nil
 }
 
-func messageHandler(p *kafka.Producer) {
+func producerMessageHandler(p *kafka.Producer) {
 	for e := range p.Events() {
 		switch ev := e.(type) {
 		case *kafka.Message:
@@ -38,4 +40,18 @@ func messageHandler(p *kafka.Producer) {
 			}
 		}
 	}
+}
+
+// Setup clean shutdown on Ctrl+C (SIGINT) or SIGTERM
+func SetupCloseProducerHandler(producer *kafka.Producer) {
+	fmt.Println("Press Ctrl+C to exit.")
+	sigchan := make(chan os.Signal, 1)
+	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		sig := <-sigchan
+		fmt.Printf("Caught signal %v: terminating\n", sig)
+		producer.Close()
+		fmt.Println("Kafka producer closed.")
+		os.Exit(0)
+	}()
 }

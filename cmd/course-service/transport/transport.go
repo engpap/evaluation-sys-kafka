@@ -4,11 +4,7 @@ import (
 	kafkaUtils "evaluation-sys-kafka/internal/kafka"
 	"evaluation-sys-kafka/pkg/courses/controllers"
 	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,23 +23,9 @@ func initRouter() *gin.Engine {
 		panic(err)
 	}
 	courseController := controllers.Controller{Producer: producer}
-	setupCloseHandler(producer)
+	kafkaUtils.SetupCloseProducerHandler(producer)
 
 	router.POST("/courses/create", courseController.CreateCourse)
 
 	return router
-}
-
-// Setup clean shutdown on Ctrl+C (SIGINT) or SIGTERM
-func setupCloseHandler(producer *kafka.Producer) {
-	fmt.Println("Press Ctrl+C to exit.")
-	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		<-c
-		fmt.Println("\r- Ctrl+C pressed in Terminal")
-		producer.Close()
-		fmt.Println("Kafka producer closed.")
-		os.Exit(0)
-	}()
 }

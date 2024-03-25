@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"encoding/json"
 	"evaluation-sys-kafka/pkg/courses/models"
+	"fmt"
 	"net/http"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
@@ -10,6 +12,7 @@ import (
 
 type Controller struct {
 	Producer *kafka.Producer
+	Courses  []models.Course
 }
 
 func (c *Controller) CreateCourse(context *gin.Context) {
@@ -18,25 +21,27 @@ func (c *Controller) CreateCourse(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	// Convert the course model to a map[string]string
-	/*courseMap := map[string]string{
-		"course_id":   request.ID,
-		"course_name": request.Name,
-	}*/
-
+	// Update state
+	c.Courses = append(c.Courses, request)
+	fmt.Println("In-memory Courses: ", c.Courses)
+	// Convert into a byte array
+	data, err := json.Marshal(request)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	// Send the message to the Kafka topic
 	topic := "course"
-	err := c.Producer.Produce(&kafka.Message{
+	err = c.Producer.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-		Key:            []byte("trykey"),
-		Value:          []byte("tryval"),
+		Key:            []byte("data"),
+		Value:          data,
 	}, nil)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	// TODO: understand whether this is necessary
-	//c.Producer.Flush(15 * 1000) // Wait for 15 seconds for the producer to finish
-
+	// Waiit for all messages to be acknowledged
+	c.Producer.Flush(15 * 1000)
 	context.JSON(http.StatusOK, gin.H{"message": "Course created successfully"})
 }
