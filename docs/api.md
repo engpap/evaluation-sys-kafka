@@ -54,10 +54,10 @@
 
 
 ## Course Service
-- POST: /courses/create -> just REST api
+- POST: /courses/create -> just REST api ✅
     - course id
     - name
-- DELETE: /courses/:course-id/delete -> just REST api
+- DELETE: /courses/:course-id/delete -> just REST api ✅
 - POST: /courses/enroll -> REST api (+ send on `enrollment` topic)
     - student id
     - course id

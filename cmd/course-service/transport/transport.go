@@ -26,6 +26,7 @@ func initRouter() *gin.Engine {
 	kafkaUtils.SetupCloseProducerHandler(producer)
 
 	router.POST("/courses/create", courseController.CreateCourse)
+	router.DELETE("/courses/:course-id/delete", courseController.DeleteCourse)
 
 	return router
 }

@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/signal"
@@ -54,4 +55,20 @@ func SetupCloseProducerHandler(producer *kafka.Producer) {
 		fmt.Println("Kafka producer closed.")
 		os.Exit(0)
 	}()
+}
+
+func ProduceMessage(producer *kafka.Producer, actionType string, topic string, data any) error {
+	// convert course into a byte array
+	byteData, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	// send the message to the Kafka topic
+	err = producer.Produce(&kafka.Message{
+		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
+		Key:            []byte("data"),
+		Value:          byteData,
+		Headers:        []kafka.Header{{Key: "action_type", Value: []byte(actionType)}},
+	}, nil)
+	return err
 }

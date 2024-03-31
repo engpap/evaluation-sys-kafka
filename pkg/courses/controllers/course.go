@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"encoding/json"
+	kafkaUtils "evaluation-sys-kafka/internal/kafka"
 	"evaluation-sys-kafka/pkg/courses/models"
 	"fmt"
 	"net/http"
@@ -21,27 +21,45 @@ func (c *Controller) CreateCourse(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	// Update state
+	// prevent adding when id already present
+	for _, course := range c.Courses {
+		if request.ID == course.ID {
+			context.JSON(http.StatusConflict, gin.H{"error": "Course with such ID already present"})
+			return
+		}
+	}
+	// update in-memory state
 	c.Courses = append(c.Courses, request)
-	fmt.Println("In-memory Courses: ", c.Courses)
-	// Convert into a byte array
-	data, err := json.Marshal(request)
+	fmt.Println("(CreateCourse) > In-memory Courses: ", c.Courses)
+	err := kafkaUtils.ProduceMessage(c.Producer, "add", "course", request)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	// Send the message to the Kafka topic
-	topic := "course"
-	err = c.Producer.Produce(&kafka.Message{
-		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-		Key:            []byte("data"),
-		Value:          data,
-	}, nil)
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	// Waiit for all messages to be acknowledged
+	// wait for all messages to be acknowledged
 	c.Producer.Flush(15 * 1000)
 	context.JSON(http.StatusOK, gin.H{"message": "Course created successfully"})
+}
+
+func (c *Controller) DeleteCourse(context *gin.Context) {
+	courseID := context.Param("course-id")
+	if courseID == "" {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Course ID to delete not provided"})
+		return
+	}
+	// Iterate over courses global variable and delete when there's a match
+	for index, course := range c.Courses {
+		if course.ID == courseID {
+			c.Courses = append(c.Courses[:index], c.Courses[index+1:]...)
+			fmt.Println("(DeleteCourse) > In-memory Courses: ", c.Courses)
+			err := kafkaUtils.ProduceMessage(c.Producer, "delete", "course", course)
+			if err != nil {
+				context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			context.JSON(http.StatusOK, gin.H{"message": "Course deleted successfully"})
+			return
+		}
+	}
+	context.JSON(http.StatusNotFound, gin.H{"error": "Course not found"})
 }
