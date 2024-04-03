@@ -58,7 +58,7 @@
     - course id
     - name
 - DELETE: /courses/:course-id/delete -> just REST api ✅
-- POST: /courses/enroll -> REST api (+ send on `enrollment` topic) + fetch from in-state memory populated through consumer on `student` topic to check that student id exist
+- POST: /courses/enroll -> REST api (+ send on `enrollment` topic) + fetch from in-state memory populated through consumer on `student` topic to check that student id exist ✅
     - student id
     - course id
 
