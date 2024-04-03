@@ -1,17 +1,24 @@
 package controllers
 
 import (
+	kafkaUtils "evaluation-sys-kafka/internal/kafka"
 	courseModels "evaluation-sys-kafka/pkg/courses/models"
+	"evaluation-sys-kafka/pkg/users/models"
 	"fmt"
 	"net/http"
 
+	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/gin-gonic/gin"
 )
 
 type Controller struct {
+	Producer       *kafka.Producer
 	ConsumerOutput []interface{}
+	Students       []models.Student
+	Professors     []models.Professor
 }
 
+// TODO: update based on action_type
 func (c *Controller) GetCourses(context *gin.Context) {
 	var courses []courseModels.Course // Initialize a slice to hold Course instances
 
@@ -30,33 +37,45 @@ func (c *Controller) GetCourses(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"courses": courses})
 }
 
-/*
-
-func (c *Controller) GetCourses(context *gin.Context) {
-	fmt.Printf(">>> " + string(c.ConsumerOutput))
-
-	// Try unmarshalling into an array of Courses first
-	var courses []courseModels.Course
-	err := json.Unmarshal(c.ConsumerOutput, &courses)
-
-	// If unmarshalling into an array fails, try unmarshalling into a single Course object
-	if err != nil {
-		var singleCourse courseModels.Course
-		err = json.Unmarshal(c.ConsumerOutput, &singleCourse)
-		// If this succeeds, append the single course to the courses slice
-		if err == nil {
-			courses = append(courses, singleCourse)
+// ASSUMPTION: No authentication; student record is created with a simple POST request
+func (c *Controller) CreateStudent(context *gin.Context) {
+	var request models.Student
+	if err := context.ShouldBindJSON(&request); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	for _, student := range c.Students {
+		if student.ID == request.ID {
+			context.JSON(http.StatusConflict, gin.H{"error": "Student with such ID already present"})
+			return
 		}
 	}
-
-	// If both attempts fail, return an error
+	c.Students = append(c.Students, request)
+	fmt.Println("(CreateStudent) > In-memory Students: ", c.Students)
+	err := kafkaUtils.ProduceMessage(c.Producer, "add", "student", request)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	// wait for all messages to be acknowledged
+	c.Producer.Flush(15 * 1000)
+	context.JSON(http.StatusCreated, gin.H{"message": "Student created successfully"})
+}
 
-	fmt.Printf("GetCourses\n")
-	fmt.Printf("ConsumerOutput: %s\n", c.ConsumerOutput)
-
-	context.JSON(http.StatusOK, gin.H{"courses": courses})
-}*/
+func (c *Controller) CreateProfessor(context *gin.Context) {
+	var request models.Professor
+	if err := context.ShouldBindJSON(&request); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	for _, professor := range c.Professors {
+		if professor.ID == request.ID {
+			context.JSON(http.StatusConflict, gin.H{"error": "Professor with such ID already present"})
+			return
+		}
+	}
+	c.Professors = append(c.Professors, request)
+	fmt.Println("(CreateProfessor) > In-memory Professors: ", c.Professors)
+	// TODO: here you could produce some events, for now it's good as it is
+	context.JSON(http.StatusCreated, gin.H{"message": "Professor created successfully"})
+}

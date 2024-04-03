@@ -9,7 +9,7 @@ import (
 )
 
 func Serve() {
-	port := "8081"
+	port := "8083"
 	router := initRouter()
 	router.Run(":" + port)
 	fmt.Println("Server is running on port " + port)
@@ -18,22 +18,19 @@ func Serve() {
 func initRouter() *gin.Engine {
 	router := gin.Default()
 
-	//producer, err := kafkaUtils.CreateProducer()
-	//if err != nil {
-	//	panic(err)
-	//}
-	//userController := controllers.Controller{Producer: producer}
-	//afkaUtils.SetupCloseHandler(producer)
-
-	// TODO: set up consumer
-
-	//kafkaUtils.SetupCloseConsumerHandler(consumer)
-
-	userController := controllers.Controller{}
+	producer, err := kafkaUtils.CreateProducer()
+	if err != nil {
+		panic(err)
+	}
+	userController := controllers.Controller{Producer: producer}
+	kafkaUtils.SetupCloseProducerHandler(producer)
 
 	go kafkaUtils.CreateConsumer("course", &userController.ConsumerOutput)
+	// TODO: set up consumer handler
 
 	router.GET("/student/get-course", userController.GetCourses)
+	router.POST("/users/stud/create", userController.CreateStudent)
+	router.POST("/users/prof/create", userController.CreateProfessor)
 
 	return router
 }

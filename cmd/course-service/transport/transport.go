@@ -22,11 +22,16 @@ func initRouter() *gin.Engine {
 	if err != nil {
 		panic(err)
 	}
+	// producer setup
 	courseController := controllers.Controller{Producer: producer}
 	kafkaUtils.SetupCloseProducerHandler(producer)
+	// consumers setup
+	go kafkaUtils.CreateConsumer("student", &courseController.StudentConsumerOutput)
 
+	// routes
 	router.POST("/courses/create", courseController.CreateCourse)
 	router.DELETE("/courses/:course-id/delete", courseController.DeleteCourse)
+	router.POST("/courses/enroll", courseController.EnrollStudentInCourse)
 
 	return router
 }

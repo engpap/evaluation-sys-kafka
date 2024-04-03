@@ -1,4 +1,0 @@
-@host = localhost:8081
-
-GET http://{{host}}/student/get-course HTTP/1.1
-content-type: application/json

@@ -1,0 +1,11 @@
+@host = localhost:8080
+
+POST http://{{host}}/courses/create HTTP/1.1
+content-type: application/json
+
+{
+    "id" : "1",
+    "name" : "Geo"
+}
+
+###
