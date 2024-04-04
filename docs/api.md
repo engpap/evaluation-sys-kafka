@@ -67,15 +67,15 @@
 
 
 ## Project Service
-- POST: /projects/create -> REST api + send on `project` topic
+- POST: /projects/create -> REST api + send on `project` topic ✅
     - project id
     - course id
     - name
-- POST: /projects/sol/submit -> REST api (+ send on `submission` topic)
+- POST: /projects/:project-id/submit -> REST api (+ send on `submission` topic)✅
     - submission id
     - student id
     - project id
-- POST: /projects/sol/grade -> REST api + send on `grade` topic
+- POST: /projects/:project-id/submission-id={id}/grade -> REST api + send on `grade` topic ✅
     - submission id
     - professor id
     - grade

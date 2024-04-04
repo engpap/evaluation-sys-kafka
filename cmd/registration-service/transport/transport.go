@@ -2,7 +2,7 @@ package transport
 
 import (
 	kafkaUtils "evaluation-sys-kafka/internal/kafka"
-	"evaluation-sys-kafka/pkg/users/controllers"
+	"evaluation-sys-kafka/pkg/registration/controllers"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
@@ -31,7 +31,9 @@ func initRouter() *gin.Engine {
 	// todo: contineu here
 	registrationController := controllers.Controller{}
 
-	go kafkaUtils.CreateConsumer("course", &registrationController.ConsumerOutput)
+	go kafkaUtils.CreateConsumer("course", &registrationController.CourseConsumerOutput)
+	go kafkaUtils.CreateConsumer("project", &registrationController.ProjectConsumerOutput)
+	go kafkaUtils.CreateConsumer("grade", &registrationController.GradeConsumerOutput)
 
 	//router.GET("/student/get-course", userController.GetCourses)
 

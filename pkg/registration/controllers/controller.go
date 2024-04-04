@@ -1,10 +1,17 @@
 package controllers
 
-import "evaluation-sys-kafka/pkg/courses/models"
+import (
+	coursesModels "evaluation-sys-kafka/pkg/courses/models"
+	projectsModels "evaluation-sys-kafka/pkg/projects/models"
+)
 
 type Controller struct {
-	CourseConsumerOutput []interface{}
-	Courses              []models.Course
+	CourseConsumerOutput  []interface{}
+	Courses               []coursesModels.Course
+	ProjectConsumerOutput []interface{}
+	Projects              []projectsModels.Project
+	GradeConsumerOutput   []interface{}
+	Grades                []projectsModels.Grade
 }
 
 func (c *Controller) GetCourses() {
