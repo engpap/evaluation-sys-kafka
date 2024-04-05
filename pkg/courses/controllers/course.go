@@ -17,7 +17,7 @@ type Controller struct {
 	Courses     []models.Course
 	Enrollments []models.Enrollment
 	// In-memory data structures populated by consumers
-	StudentConsumerOutput []interface{}
+	Students []usersModels.Student
 }
 
 func (c *Controller) CreateCourse(context *gin.Context) {
@@ -99,27 +99,9 @@ func (c *Controller) EnrollStudentInCourse(context *gin.Context) {
 		context.JSON(http.StatusNotFound, gin.H{"error": "Bad request. You're trying to enroll in a course that does not exists."})
 		return
 	}
-	// check student exists (through consuming)
-	fmt.Println("(EnrollStudentInCourse) > Students to consume: ", c.StudentConsumerOutput)
-	// iterates over the StudentConsumerOutput to fetch the students
-	var students []usersModels.Student
-	for index, element := range c.StudentConsumerOutput {
-		if studentMap, ok := element.(map[string]interface{}); ok {
-			student := usersModels.Student{
-				ID: fmt.Sprint(studentMap["id"]),
-			}
-			students = append(students, student)
-		} else {
-			fmt.Printf("Error: element at index %d cannot be converted to Student\n", index)
-		}
-	}
-
-	fmt.Println("(EnrollStudentInCourse) > In-memory Students: ", students)
-	fmt.Println("WARNING > (EnrollStudentInCourse) > Implement a listener instead for students")
-	// check student exists
 	found = false
-	for _, student := range students {
-		if student.ID == request.StudentID {
+	for _, student := range c.Students {
+		if request.StudentID == student.ID {
 			found = true
 			break
 		}
@@ -139,4 +121,19 @@ func (c *Controller) EnrollStudentInCourse(context *gin.Context) {
 	// wait for all messages to be acknowledged
 	c.Producer.Flush(15 * 1000)
 	context.JSON(http.StatusCreated, gin.H{"message": "Enrollment created successfully"})
+}
+
+// / CALLBACK FUNCTIONS
+func (c *Controller) SaveStudentInMemory(data interface{}) {
+	if studentMap, ok := data.(map[string]interface{}); ok {
+		student := usersModels.Student{
+			ID: fmt.Sprint(studentMap["id"]),
+		}
+		//students = append(students, student)
+		fmt.Println("In-memory Students: ", c.Students)
+		c.Students = append(c.Students, student)
+	} else {
+		fmt.Printf("Error: data cannot be converted to Student\n")
+	}
+
 }

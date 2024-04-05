@@ -2,7 +2,6 @@ package controllers
 
 import (
 	kafkaUtils "evaluation-sys-kafka/internal/kafka"
-	courseModels "evaluation-sys-kafka/pkg/courses/models"
 	"evaluation-sys-kafka/pkg/users/models"
 	"fmt"
 	"net/http"
@@ -12,29 +11,9 @@ import (
 )
 
 type Controller struct {
-	Producer       *kafka.Producer
-	ConsumerOutput []interface{}
-	Students       []models.Student
-	Professors     []models.Professor
-}
-
-// TODO: update based on action_type
-func (c *Controller) GetCourses(context *gin.Context) {
-	var courses []courseModels.Course // Initialize a slice to hold Course instances
-
-	for index, element := range c.ConsumerOutput {
-		//fmt.Printf("Index: %d, Value: %v, Type: %T\n", index, element, element)
-		if courseMap, ok := element.(map[string]interface{}); ok {
-			course := courseModels.Course{
-				ID:   fmt.Sprint(courseMap["id"]),
-				Name: fmt.Sprint(courseMap["name"]),
-			}
-			courses = append(courses, course)
-		} else {
-			fmt.Printf("Error: element at index %d cannot be converted to Course\n", index)
-		}
-	}
-	context.JSON(http.StatusOK, gin.H{"courses": courses})
+	Producer   *kafka.Producer
+	Students   []models.Student
+	Professors []models.Professor
 }
 
 // ASSUMPTION: No authentication; student record is created with a simple POST request

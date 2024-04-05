@@ -31,9 +31,9 @@ func initRouter() *gin.Engine {
 	// todo: contineu here
 	registrationController := controllers.Controller{}
 
-	go kafkaUtils.CreateConsumer("course", &registrationController.CourseConsumerOutput)
-	go kafkaUtils.CreateConsumer("project", &registrationController.ProjectConsumerOutput)
-	go kafkaUtils.CreateConsumer("grade", &registrationController.GradeConsumerOutput)
+	go kafkaUtils.CreateConsumer("course", registrationController.SaveCourseInMemory)
+	go kafkaUtils.CreateConsumer("project", registrationController.SaveProjectInMemory)
+	go kafkaUtils.CreateConsumer("grade", registrationController.SaveGradeInMemory)
 
 	//router.GET("/student/get-course", userController.GetCourses)
 

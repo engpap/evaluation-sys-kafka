@@ -11,7 +11,10 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
-func CreateConsumer(topic string, output *[]interface{}) {
+// To handle the message consumed from Kafka, we define a callback function
+type MessageHandler func(message interface{})
+
+func CreateConsumer(topic string, handler MessageHandler) {
 	if len(os.Args) != 2 {
 		fmt.Fprint(os.Stderr, "Usage: %s <config-file-path>\n", os.Args[0])
 		os.Exit(1)
@@ -32,10 +35,10 @@ func CreateConsumer(topic string, output *[]interface{}) {
 
 	SetupCloseConsumerHandler(c)
 
-	go consumerMessageHandler(c, output)
+	go consumerMessageHandler(c, handler)
 }
 
-func consumerMessageHandler(c *kafka.Consumer, output *[]interface{}) {
+func consumerMessageHandler(c *kafka.Consumer, handler MessageHandler) {
 	run := true
 	for run {
 		ev, err := c.ReadMessage(100 * time.Millisecond)
@@ -51,8 +54,8 @@ func consumerMessageHandler(c *kafka.Consumer, output *[]interface{}) {
 		if err != nil {
 			fmt.Printf("Failed to unmarshal data: %s", err)
 		}
-		// Append map data to output
-		*output = append(*output, data)
+		// execute the callback function
+		handler(data)
 	}
 }
 
