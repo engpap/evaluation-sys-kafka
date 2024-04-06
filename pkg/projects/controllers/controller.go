@@ -28,6 +28,9 @@ func (c *Controller) CreateProject(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	courseID := context.Param("course-id")
+	request.CourseID = courseID
+	// prevent adding when id already present
 	for _, project := range c.Projects {
 		if project.ID == request.ID {
 			context.JSON(http.StatusConflict, gin.H{"error": "Project with such ID already present"})
@@ -60,30 +63,25 @@ func (c *Controller) CreateProject(context *gin.Context) {
 
 // POST http://{{host}}/projects/:project-id/submit
 func (c *Controller) SubmitProjectSolution(context *gin.Context) {
-	/*type RequestBody struct {
-		ID        string `json:"id"`
-		StudentID string `json:"student_id"`
-		Solution  string `json:"solution"`
-	}
-	var requestBody RequestBody*/
 	var request models.Submission
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	// port request to models.Submission
-	// Port request to models.Submission
-	/*request := models.Submission{
-		ID:        request.ID,
-		ProjectID: context.Param("project-id"), // This was missing in your initial struct definition
-		StudentID: request.StudentID,
-		Solution:  request.Solution,
-	}*/
 	// prevent adding when id already present
 	request.ProjectID = context.Param("project-id")
 	for _, submission := range c.Submissions {
 		if request.ID == submission.ID || request.ProjectID == submission.ProjectID && request.StudentID == submission.StudentID {
 			context.JSON(http.StatusConflict, gin.H{"error": "Submission already present"})
+			return
+		}
+	}
+	courseID := context.Param("course-id")
+	// check whether given project is under specified course
+	// find project by id
+	for _, project := range c.Projects {
+		if project.ID == request.ProjectID && courseID != project.CourseID {
+			context.JSON(http.StatusBadRequest, gin.H{"error": "Submitting solution for a project whose course id is wrong"})
 			return
 		}
 	}
@@ -98,18 +96,27 @@ func (c *Controller) SubmitProjectSolution(context *gin.Context) {
 	// wait for all messages to be acknowledged
 	c.Producer.Flush(15 * 1000)
 	context.JSON(http.StatusCreated, gin.H{"message": "Submission created successfully"})
-
 }
 
 // TODO: check whether student and project exists before storing in memory
 func (c *Controller) GradeProjectSolution(context *gin.Context) {
+	courseID := context.Param("course-id")
 	projectID := context.Param("project-id")
 	submissionID := context.Param("submission-id")
 	// check that project id and submission id make sense, i.e. the submission id corresponds to a submission of the project id given
 	// find the submission by id and check whether its project-id corresponds to the one in the URL
 	for _, sub := range c.Submissions {
 		if sub.ID == submissionID && sub.ProjectID != projectID {
-			context.JSON(http.StatusInternalServerError, gin.H{"error": "Project and submission mismatch"})
+			context.JSON(http.StatusInternalServerError, gin.H{"error": "Grading a submission with a wrong project id"})
+			return
+		}
+	}
+	// check if project and course make sense
+	// check whether given project is under specified course
+	// find project by id
+	for _, project := range c.Projects {
+		if project.ID == projectID && courseID != project.CourseID {
+			context.JSON(http.StatusBadRequest, gin.H{"error": "Grading a solution with a wrong course id"})
 			return
 		}
 	}

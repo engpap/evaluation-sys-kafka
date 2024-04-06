@@ -28,9 +28,9 @@ func initRouter() *gin.Engine {
 
 	go kafkaUtils.CreateConsumer("course", projectController.SaveCourseInMemory)
 
-	router.POST("/projects/create", projectController.CreateProject)
-	router.POST("/projects/:project-id/submit", projectController.SubmitProjectSolution)
-	router.POST("/projects/:project-id/submissions/:submission-id/grade", projectController.GradeProjectSolution)
+	router.POST("/courses/:course-id/projects/create", projectController.CreateProject)
+	router.POST("/courses/:course-id/projects/:project-id/submit", projectController.SubmitProjectSolution)
+	router.POST("/courses/:course-id/projects/:project-id/submissions/:submission-id/grade", projectController.GradeProjectSolution)
 
 	return router
 }
