@@ -75,6 +75,7 @@
     - submission id
     - student id
     - project id
+    TODO: here you can listen on `enrollment` and check whether the student that's is submitting is actually attending the course
 - POST: /projects/:project-id/submission-id={id}/grade -> REST api + send on `grade` topic ✅
     - submission id
     - professor id
@@ -96,3 +97,10 @@ Phrases enclosed in `()` are not mandatory, they're used for implementing additi
 
 # TODO
 Implement a fault recovery procedure to resume a valid state of the services.
+
+# todo:
+- when you create sub, specify the course id, not only project id
+- when sub  is created, check if student exists
+- check if student enrolled in course before submitting a proj
+
+test grade submission

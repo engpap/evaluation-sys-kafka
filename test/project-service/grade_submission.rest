@@ -1,0 +1,10 @@
+@host = localhost:8084
+
+POST http://{{host}}/projects/2/submissions/2/grade HTTP/1.1
+content-type: application/json
+
+{
+    "id" : "2",
+    "professor_id" : "prof_1",
+    "grade" : "11"
+}

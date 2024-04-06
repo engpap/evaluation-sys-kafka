@@ -4,6 +4,6 @@ POST http://{{host}}/users/prof/create HTTP/1.1
 content-type: application/json
 
 {
-    "id" : "2"
+    "id" : "prof_1"
 }
 
