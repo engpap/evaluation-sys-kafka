@@ -96,11 +96,21 @@ Additional features are not manadatory. They could be implemented to make the ap
 Phrases enclosed in `()` are not mandatory, they're used for implementing additional features.
 
 # TODO
-Implement a fault recovery procedure to resume a valid state of the services.
-
-# todo:
 - when you create sub, specify the course id, not only project id
 - when sub  is created, check if student exists
 - check if student enrolled in course before submitting a proj
+- finish frontend cli
+- implement faulty recovery procedure
 
-test grade submission
+
+# Fault Recovery
+Implement a fault recovery procedure to resume a valid state of the services.
+
+## Scenario 1
+other services are running, one goes down, a producer sends messages on the topic on which the failed service was listening, then the failed service is relaunched.
+The consumer correctly re-consumes the messages from the beginning of the history (seek to the beginning of the assigned partition) => State is recovered. ✅
+This is done thanks to `resetPartitionsOffset` function.
+
+## Scenario 2
+3/4 services are running, they produce messages on the topic on which service 1/4 should be consuming from. Service 1/4 is launched. It correctly read the messages that have been produced. ✅
+This is done automatically by Kafka with the current config of the consumer.
