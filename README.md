@@ -42,3 +42,6 @@ Shut down Kafka when you are done with it
 
 # Nice to have
 Set up debugging in VS Code: https://github.com/golang/vscode-go/wiki/debugging
+
+# To run the frontend
+go run cmd/cli-frontend/main.go

@@ -129,9 +129,8 @@ func (c *Controller) SaveStudentInMemory(data interface{}) {
 		student := usersModels.Student{
 			ID: fmt.Sprint(studentMap["id"]),
 		}
-		//students = append(students, student)
-		fmt.Println("In-memory Students: ", c.Students)
 		c.Students = append(c.Students, student)
+		fmt.Println("In-memory Students: ", c.Students)
 	} else {
 		fmt.Printf("Error: data cannot be converted to Student\n")
 	}
