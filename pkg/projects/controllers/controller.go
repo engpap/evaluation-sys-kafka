@@ -145,13 +145,38 @@ func (c *Controller) GradeProjectSolution(context *gin.Context) {
 	context.JSON(http.StatusCreated, gin.H{"message": fmt.Sprintf("Submission %s graded successfully with %s", request.SubmissionID, request.Grade)})
 }
 
-func (c *Controller) SaveCourseInMemory(data interface{}) {
+func (c *Controller) UpdateCourseInMemory(action_type string, data interface{}) {
+	if action_type == "add" {
+		c.saveCourseInMemory(data)
+	} else if action_type == "delete" {
+		c.deleteCourseInMemory(data)
+	} else {
+		fmt.Printf("Invalid action type: %s\n", action_type)
+	}
+}
+
+func (c *Controller) saveCourseInMemory(data interface{}) {
+
 	if courseMap, ok := data.(map[string]interface{}); ok {
 		course := courseModels.Course{
 			ID:   fmt.Sprint(courseMap["id"]),
 			Name: fmt.Sprint(courseMap["name"]),
 		}
 		c.Courses = append(c.Courses, course)
+		fmt.Println("In-Memory Courses: ", c.Courses)
+	} else {
+		fmt.Printf("Error: data cannot be converted to Course\n")
+	}
+}
+
+func (c *Controller) deleteCourseInMemory(data interface{}) {
+	if courseMap, ok := data.(map[string]interface{}); ok {
+		courseID := fmt.Sprint(courseMap["id"])
+		for i, course := range c.Courses {
+			if course.ID == courseID {
+				c.Courses = append(c.Courses[:i], c.Courses[i+1:]...)
+			}
+		}
 		fmt.Println("In-Memory Courses: ", c.Courses)
 	} else {
 		fmt.Printf("Error: data cannot be converted to Course\n")

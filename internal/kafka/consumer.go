@@ -12,7 +12,7 @@ import (
 )
 
 // To handle the message consumed from Kafka, we define a callback function
-type MessageHandler func(message interface{})
+type MessageHandler func(action_type string, message interface{})
 
 // CreateConsumer creates a Kafka consumer and subscribes to a topic.
 //
@@ -77,8 +77,21 @@ func consumerMessageHandler(c *kafka.Consumer, handler MessageHandler) {
 		if err != nil {
 			fmt.Printf("Failed to unmarshal data: %s", err)
 		}
+		headers := ev.Headers
+		actionType := ""
+		for _, header := range headers {
+			if string(header.Key) == "action_type" {
+				actionType = string(header.Value)
+				break
+			}
+		}
+		// check that action_type is either "add" or "delete"
+		if actionType != "add" && actionType != "delete" {
+			fmt.Printf("Invalid action type: %s\n", actionType)
+			continue
+		}
 		// execute the callback function
-		handler(data)
+		handler(actionType, data)
 	}
 }
 

@@ -26,8 +26,8 @@ func initRouter() *gin.Engine {
 	kafkaUtils.SetupCloseProducerHandler(producer)
 	// TODO: set up consumer handler
 
-	router.POST("/users/stud/create", userController.CreateStudent)
-	router.POST("/users/prof/create", userController.CreateProfessor)
+	router.POST("/users/student/create", userController.CreateStudent)
+	router.POST("/users/professor/create", userController.CreateProfessor)
 
 	return router
 }

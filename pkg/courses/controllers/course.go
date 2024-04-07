@@ -20,6 +20,10 @@ type Controller struct {
 	Students []usersModels.Student
 }
 
+func (c *Controller) GetCourses(context *gin.Context) {
+	context.JSON(http.StatusOK, c.Courses)
+}
+
 func (c *Controller) CreateCourse(context *gin.Context) {
 	var request models.Course
 	if err := context.ShouldBindJSON(&request); err != nil {
@@ -71,7 +75,6 @@ func (c *Controller) DeleteCourse(context *gin.Context) {
 
 // checks if enrollment already exists in memory. if not, it checks existance of course and student provided.
 // students needs to be fetched from kafka topic (user-service producers pushes them into `student` topic)
-// TODO: should i fetch only new students to speed things up (?) or create a listener instead of fetching on request
 func (c *Controller) EnrollStudentInCourse(context *gin.Context) {
 	var request models.Enrollment
 	if err := context.ShouldBindJSON(&request); err != nil {
@@ -124,7 +127,15 @@ func (c *Controller) EnrollStudentInCourse(context *gin.Context) {
 }
 
 // / CALLBACK FUNCTIONS
-func (c *Controller) SaveStudentInMemory(data interface{}) {
+
+func (c *Controller) UpdateStudentInMemory(action_type string, data interface{}) {
+	if action_type == "add" {
+		c.saveStudentInMemory(data)
+	} else {
+		fmt.Printf("Error: action type %s not supported\n", action_type)
+	}
+}
+func (c *Controller) saveStudentInMemory(data interface{}) {
 	if studentMap, ok := data.(map[string]interface{}); ok {
 		student := usersModels.Student{
 			ID: fmt.Sprint(studentMap["id"]),

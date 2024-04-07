@@ -18,25 +18,12 @@ func Serve() {
 func initRouter() *gin.Engine {
 	router := gin.Default()
 
-	//producer, err := kafkaUtils.CreateProducer()
-	//if err != nil {
-	//	panic(err)
-	//}
-	//userController := controllers.Controller{Producer: producer}
-	//afkaUtils.SetupCloseHandler(producer)
-
-	// TODO: set up consumer
-
-	//kafkaUtils.SetupCloseConsumerHandler(consumer)
-	// todo: contineu here
 	registrationController := controllers.Controller{}
 
-	go kafkaUtils.CreateConsumer("course", registrationController.SaveCourseInMemory)
-	go kafkaUtils.CreateConsumer("project", registrationController.SaveProjectInMemory)
-	go kafkaUtils.CreateConsumer("grade", registrationController.SaveGradeInMemory)
-	go kafkaUtils.CreateConsumer("submission", registrationController.SaveSubmissionInMemory)
-
-	//router.GET("/student/get-course", userController.GetCourses)
+	go kafkaUtils.CreateConsumer("course", registrationController.UpdateCourseInMemory)
+	go kafkaUtils.CreateConsumer("project", registrationController.UpdateProjectInMemory)
+	go kafkaUtils.CreateConsumer("grade", registrationController.UpdateGradeInMemory)
+	go kafkaUtils.CreateConsumer("submission", registrationController.UpdateSubmissionInMemory)
 
 	return router
 }

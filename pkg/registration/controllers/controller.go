@@ -15,11 +15,15 @@ type Controller struct {
 	Submissions []projectModels.Submission
 }
 
-func (c *Controller) GetCourses() {
-	// TODO: listen on CourseConsumerOutput and updates Courses
+func (c *Controller) UpdateCourseInMemory(action_type string, data interface{}) {
+	if action_type == "add" {
+		c.saveCourseInMemory(data)
+	} else {
+		fmt.Printf("Error: action type %s not supported\n", action_type)
+	}
 }
 
-func (c *Controller) SaveCourseInMemory(data interface{}) {
+func (c *Controller) saveCourseInMemory(data interface{}) {
 	if courseMap, ok := data.(map[string]interface{}); ok {
 		course := courseModels.Course{
 			ID:   fmt.Sprint(courseMap["id"]),
@@ -32,7 +36,15 @@ func (c *Controller) SaveCourseInMemory(data interface{}) {
 	}
 }
 
-func (c *Controller) SaveProjectInMemory(data interface{}) {
+func (c *Controller) UpdateProjectInMemory(action_type string, data interface{}) {
+	if action_type == "add" {
+		c.saveProjectInMemory(data)
+	} else {
+		fmt.Printf("Error: action type %s not supported\n", action_type)
+	}
+}
+
+func (c *Controller) saveProjectInMemory(data interface{}) {
 	if projectMap, ok := data.(map[string]interface{}); ok {
 		project := projectModels.Project{
 			ID:       fmt.Sprint(projectMap["id"]),
@@ -46,7 +58,15 @@ func (c *Controller) SaveProjectInMemory(data interface{}) {
 	}
 }
 
-func (c *Controller) SaveSubmissionInMemory(data interface{}) {
+func (c *Controller) UpdateSubmissionInMemory(action_type string, data interface{}) {
+	if action_type == "add" {
+		c.saveSubmissionInMemory(data)
+	} else {
+		fmt.Printf("Error: action type %s not supported\n", action_type)
+	}
+}
+
+func (c *Controller) saveSubmissionInMemory(data interface{}) {
 	if submissionMap, ok := data.(map[string]interface{}); ok {
 		submission := projectModels.Submission{
 			ID:        fmt.Sprint(submissionMap["id"]),
@@ -61,7 +81,15 @@ func (c *Controller) SaveSubmissionInMemory(data interface{}) {
 	}
 }
 
-func (c *Controller) SaveGradeInMemory(data interface{}) {
+func (c *Controller) UpdateGradeInMemory(action_type string, data interface{}) {
+	if action_type == "add" {
+		c.saveGradeInMemory(data)
+	} else {
+		fmt.Printf("Error: action type %s not supported\n", action_type)
+	}
+}
+
+func (c *Controller) saveGradeInMemory(data interface{}) {
 	if gradeMap, ok := data.(map[string]interface{}); ok {
 		grade := projectModels.Grade{
 			ID:           fmt.Sprint(gradeMap["id"]),
