@@ -17,7 +17,6 @@ func GetCourses() {
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		color.Red("Failed to fetch courses: %s\n", resp.Status)
-		return
 	} else {
 		color.Green("Courses:")
 		scanner := bufio.NewScanner(resp.Body)
