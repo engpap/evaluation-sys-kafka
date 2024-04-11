@@ -125,8 +125,13 @@ func GetProjectSubmissions(args []string) {
 	if resp.StatusCode != http.StatusOK {
 		color.Red("Failed to get submissions: %s\n", resp.Status)
 		return
+	} else {
+		color.Green("Submissions for the project ID %s and course ID %s:", projectID, courseID)
+		scanner := bufio.NewScanner(resp.Body)
+		for scanner.Scan() {
+			color.Green(scanner.Text())
+		}
 	}
-	color.Green("Submissions: %v\n", resp.Body)
 }
 
 func GetSubmissionGrades(args []string) {
@@ -155,6 +160,11 @@ func GetSubmissionGrades(args []string) {
 	if resp.StatusCode != http.StatusOK {
 		color.Red("Failed to get grades: %s\n", resp.Status)
 		return
+	} else {
+		color.Green("Grade of submission ID %s of the project ID %s and course ID %s:", submissionID, projectID, courseID)
+		scanner := bufio.NewScanner(resp.Body)
+		for scanner.Scan() {
+			color.Green(scanner.Text())
+		}
 	}
-	color.Green("Grades: %v\n", resp.Body)
 }
