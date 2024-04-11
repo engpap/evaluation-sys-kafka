@@ -72,7 +72,7 @@ func (c *Controller) saveSubmissionInMemory(data interface{}) {
 			ID:        fmt.Sprint(submissionMap["id"]),
 			ProjectID: fmt.Sprint(submissionMap["project_id"]),
 			StudentID: fmt.Sprint(submissionMap["student_id"]),
-			Solution:  fmt.Sprint(submissionMap["submission_id"]),
+			Solution:  fmt.Sprint(submissionMap["solution"]),
 		}
 		c.Submissions = append(c.Submissions, submission)
 		fmt.Println("In-Memory Submissions: ", c.Submissions)
