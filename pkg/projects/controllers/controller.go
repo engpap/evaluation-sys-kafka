@@ -182,3 +182,66 @@ func (c *Controller) deleteCourseInMemory(data interface{}) {
 		fmt.Printf("Error: data cannot be converted to Course\n")
 	}
 }
+
+// NON-REQUIRED FUNCTIONS BY THE SPECS
+
+func (c *Controller) GetCourseProjects(context *gin.Context) {
+	courseID := context.Param("course-id")
+	var projects []models.Project
+	for _, project := range c.Projects {
+		if project.CourseID == courseID {
+			projects = append(projects, project)
+		}
+	}
+	context.JSON(http.StatusOK, projects)
+}
+
+func (c *Controller) GetProjectSubmissions(context *gin.Context) {
+	courseID := context.Param("course-id")
+	projectID := context.Param("project-id")
+	// check whether project id is under specified course
+	// find project by id
+	for _, project := range c.Projects {
+		if project.ID == projectID && courseID != project.CourseID {
+			context.JSON(http.StatusBadRequest, gin.H{"error": "Getting submissions for a project with a wrong course id"})
+			return
+		}
+	}
+	var submissions []models.Submission
+	for _, submission := range c.Submissions {
+		if submission.ProjectID == projectID {
+			submissions = append(submissions, submission)
+		}
+	}
+	context.JSON(http.StatusOK, submissions)
+}
+
+func (c *Controller) GetSubmissionGrades(context *gin.Context) {
+	courseID := context.Param("course-id")
+	projectID := context.Param("project-id")
+	submissionID := context.Param("submission-id")
+	// check whether project id and submission id make sense, i.e. the submission id corresponds to a submission of the project id given
+	// find the submission by id and check whether its project-id corresponds to the one in the URL
+	for _, sub := range c.Submissions {
+		if sub.ID == submissionID && sub.ProjectID != projectID {
+			context.JSON(http.StatusInternalServerError, gin.H{"error": "Getting grades for a submission with a wrong project id"})
+			return
+		}
+	}
+	// check if project and course make sense
+	// check whether given project is under specified course
+	// find project by id
+	for _, project := range c.Projects {
+		if project.ID == projectID && courseID != project.CourseID {
+			context.JSON(http.StatusBadRequest, gin.H{"error": "Getting grades for a solution with a wrong course id"})
+			return
+		}
+	}
+	var grades []models.Grade
+	for _, grade := range c.Grades {
+		if grade.SubmissionID == submissionID {
+			grades = append(grades, grade)
+		}
+	}
+	context.JSON(http.StatusOK, grades)
+}
