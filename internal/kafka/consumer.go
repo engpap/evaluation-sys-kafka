@@ -36,7 +36,7 @@ func CreateConsumer(topic string, handler MessageHandler) {
 		fmt.Fprint(os.Stderr, "Usage: %s <config-file-path>\n", os.Args[0])
 		os.Exit(1)
 	}
-	configFile := os.Args[1]
+	configFile := os.Args[1] // this can be either getting-started.properties or client.properties
 
 	conf := ReadConfig(configFile)
 	conf["group.id"] = "evaluation-sys"
