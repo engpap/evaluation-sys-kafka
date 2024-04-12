@@ -29,10 +29,10 @@ func initRouter() *gin.Engine {
 	go kafkaUtils.CreateConsumer("student", courseController.UpdateStudentInMemory)
 
 	// routes
-	router.GET("/courses", courseController.GetCourses)
-	router.POST("/courses/create", courseController.CreateCourse)
-	router.DELETE("/courses/:course-id/delete", courseController.DeleteCourse)
-	router.POST("/courses/enroll", courseController.EnrollStudentInCourse)
+	router.GET("/courses", courseController.GetCourses)                        // FE done 4 everybody
+	router.POST("/courses/create", courseController.CreateCourse)              // FE done for admin
+	router.DELETE("/courses/:course-id/delete", courseController.DeleteCourse) // FE done for admin
+	router.POST("/courses/enroll", courseController.EnrollStudentInCourse)     // FE done for stud
 
 	return router
 }
