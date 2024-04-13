@@ -1,21 +1,21 @@
 package controllers
 
 import (
-	kafkaUtils "evaluation-sys-kafka/internal/kafka"
-	"evaluation-sys-kafka/pkg/courses/models"
+	kafkaUtils "evaluation-sys-kafka/internal/kafkawrapper"
+	courseModels "evaluation-sys-kafka/pkg/courses/models"
 	usersModels "evaluation-sys-kafka/pkg/users/models"
 	"fmt"
 	"net/http"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/gin-gonic/gin"
 )
 
 type Controller struct {
 	Producer *kafka.Producer
 	// In-memory data structures
-	Courses     []models.Course
-	Enrollments []models.Enrollment
+	Courses     []courseModels.Course
+	Enrollments []courseModels.Enrollment
 	// In-memory data structures populated by consumers
 	Students []usersModels.Student
 }
@@ -25,7 +25,7 @@ func (c *Controller) GetCourses(context *gin.Context) {
 }
 
 func (c *Controller) CreateCourse(context *gin.Context) {
-	var request models.Course
+	var request courseModels.Course
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -76,7 +76,7 @@ func (c *Controller) DeleteCourse(context *gin.Context) {
 // checks if enrollment already exists in memory. if not, it checks existance of course and student provided.
 // students needs to be fetched from kafka topic (user-service producers pushes them into `student` topic)
 func (c *Controller) EnrollStudentInCourse(context *gin.Context) {
-	var request models.Enrollment
+	var request courseModels.Enrollment
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

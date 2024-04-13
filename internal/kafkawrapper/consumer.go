@@ -1,4 +1,4 @@
-package kafka
+package kafkawrapper
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
 
 // To handle the message consumed from Kafka, we define a callback function

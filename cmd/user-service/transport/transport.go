@@ -1,8 +1,8 @@
 package transport
 
 import (
-	kafkaUtils "evaluation-sys-kafka/internal/kafka"
-	"evaluation-sys-kafka/pkg/users/controllers"
+	"evaluation-sys-kafka/cmd/user-service/controllers"
+	kafkaUtils "evaluation-sys-kafka/internal/kafkawrapper"
 	"fmt"
 
 	"github.com/gin-gonic/gin"

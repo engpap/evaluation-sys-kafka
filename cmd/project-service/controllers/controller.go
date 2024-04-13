@@ -1,29 +1,29 @@
 package controllers
 
 import (
-	kafkaUtils "evaluation-sys-kafka/internal/kafka"
+	kafkaUtils "evaluation-sys-kafka/internal/kafkawrapper"
 	courseModels "evaluation-sys-kafka/pkg/courses/models"
-	"evaluation-sys-kafka/pkg/projects/models"
+	projectModels "evaluation-sys-kafka/pkg/projects/models"
 
 	"fmt"
 	"net/http"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Controller struct {
 	Producer    *kafka.Producer
-	Projects    []models.Project
-	Submissions []models.Submission
-	Grades      []models.Grade
+	Projects    []projectModels.Project
+	Submissions []projectModels.Submission
+	Grades      []projectModels.Grade
 	// In-memory data structures that will be populated through consuming
 	Courses []courseModels.Course
 }
 
 func (c *Controller) CreateProject(context *gin.Context) {
-	var request models.Project
+	var request projectModels.Project
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -63,7 +63,7 @@ func (c *Controller) CreateProject(context *gin.Context) {
 
 // POST http://{{host}}/projects/:project-id/submit
 func (c *Controller) SubmitProjectSolution(context *gin.Context) {
-	var request models.Submission
+	var request projectModels.Submission
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -120,7 +120,7 @@ func (c *Controller) GradeProjectSolution(context *gin.Context) {
 			return
 		}
 	}
-	var request models.Grade
+	var request projectModels.Grade
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -187,7 +187,7 @@ func (c *Controller) deleteCourseInMemory(data interface{}) {
 
 func (c *Controller) GetCourseProjects(context *gin.Context) {
 	courseID := context.Param("course-id")
-	var projects []models.Project
+	var projects []projectModels.Project
 	for _, project := range c.Projects {
 		if project.CourseID == courseID {
 			projects = append(projects, project)
@@ -207,7 +207,7 @@ func (c *Controller) GetProjectSubmissions(context *gin.Context) {
 			return
 		}
 	}
-	var submissions []models.Submission
+	var submissions []projectModels.Submission
 	for _, submission := range c.Submissions {
 		if submission.ProjectID == projectID {
 			submissions = append(submissions, submission)
@@ -237,7 +237,7 @@ func (c *Controller) GetSubmissionGrades(context *gin.Context) {
 			return
 		}
 	}
-	var grades []models.Grade
+	var grades []projectModels.Grade
 	for _, grade := range c.Grades {
 		if grade.SubmissionID == submissionID {
 			grades = append(grades, grade)

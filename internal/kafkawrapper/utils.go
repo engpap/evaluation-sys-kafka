@@ -1,4 +1,4 @@
-package kafka
+package kafkawrapper
 
 import (
 	"bufio"
@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
 
 func ReadConfig(configFile string) kafka.ConfigMap {

@@ -1,12 +1,12 @@
 package controllers
 
 import (
-	kafkaUtils "evaluation-sys-kafka/internal/kafka"
+	kafkaUtils "evaluation-sys-kafka/internal/kafkawrapper"
 	"evaluation-sys-kafka/pkg/users/models"
 	"fmt"
 	"net/http"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/gin-gonic/gin"
 )
 

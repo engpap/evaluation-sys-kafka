@@ -4,12 +4,14 @@ go 1.21.5
 
 require github.com/gin-gonic/gin v1.9.1
 
-require github.com/mattn/go-colorable v0.1.13 // indirect
+require (
+	github.com/confluentinc/confluent-kafka-go/v2 v2.3.0 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+)
 
 require (
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
-	github.com/confluentinc/confluent-kafka-go v1.9.2 // indirect
 	github.com/fatih/color v1.16.0
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect

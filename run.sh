@@ -48,7 +48,7 @@ case "$(uname)" in "Linux")
 "Darwin")
     osascript -e 'tell application "Terminal" to do script "cd '$(pwd)' && ./out/user getting-started.properties"'
     osascript -e 'tell application "Terminal" to do script "cd '$(pwd)' && ./out/project getting-started.properties"'
-    osascript -e 'tell application "Terminal" to do script "cd '$(pwd)' && ./out/course getting-started.properties"'
+    osascript -e 'tell application "Terminal" to do script "cxd '$(pwd)' && ./out/course getting-started.properties"'
     osascript -e 'tell application "Terminal" to do script "cd '$(pwd)' && ./out/registration getting-started.properties"'
   ;;
 *)
