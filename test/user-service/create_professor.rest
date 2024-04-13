@@ -1,6 +1,6 @@
 @host = localhost:8083
 
-POST http://{{host}}/users/prof/create HTTP/1.1
+POST http://{{host}}/users/professor/create HTTP/1.1
 content-type: application/json
 
 {
