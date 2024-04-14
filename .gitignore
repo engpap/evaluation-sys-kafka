@@ -1,1 +1,5 @@
+# Contains the configuration files for the services (sensitive data) to connect to Confluent Cloud
 client.properties
+
+# Out contains zip files of the services to be deployed
+/out
