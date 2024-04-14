@@ -1,0 +1,1 @@
+zip -r code.zip . -x ".gitignore" ".git/*" "zip-project.sh"
