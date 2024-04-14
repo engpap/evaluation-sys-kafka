@@ -10,7 +10,7 @@
 
 #
 # Run the Docker container using the following command
-# docker run -p 8083:8083 registration-service
+# docker run -p 8080:8080 registration-service
 
 FROM golang:1.21.5
 
@@ -43,7 +43,7 @@ RUN ls -ls /app/registration-service/cmd
 RUN go build -o /app/main /app/registration-service/cmd/app
 
 # Expose port for the application
-EXPOSE 8083
+EXPOSE 8080
 
 # Run the outyet command by default when the container starts.
 # Run the main executable with the client.properties file as an argument

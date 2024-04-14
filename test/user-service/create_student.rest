@@ -1,4 +1,8 @@
-@host = localhost:8083
+@host = eval-sys-user-env-docker.eba-qj3fh5wc.eu-north-1.elasticbeanstalk.com
+
+# FOR LOCAL: localhost:8083
+# FOR AWS: eval-sys-user-env-docker.eba-qj3fh5wc.eu-north-1.elasticbeanstalk.com
+
 
 POST http://{{host}}/users/student/create HTTP/1.1
 content-type: application/json

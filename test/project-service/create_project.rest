@@ -4,8 +4,8 @@ POST http://{{host}}/projects/create HTTP/1.1
 content-type: application/json
 
 {
-    "id" : "2",
-    "name" : "Project2",
+    "id" : "1",
+    "name" : "Project1",
     "course_id" : "1"
 }
 

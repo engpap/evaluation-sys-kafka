@@ -1,4 +1,5 @@
-@host = localhost:8080
+@host = eval-sys-project-env-docker.eba-tx9pz6g2.eu-north-1.elasticbeanstalk.com 
+#@host = localhost:8080
 
 POST http://{{host}}/courses/create HTTP/1.1
 content-type: application/json
