@@ -1,0 +1,9 @@
+go 1.21.5
+
+use (
+    ./user-service
+    ./course-service
+    ./project-service
+    ./registration-service
+    ./cli-app
+)
