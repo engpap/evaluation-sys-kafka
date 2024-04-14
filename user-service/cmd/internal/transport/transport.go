@@ -10,7 +10,7 @@ import (
 )
 
 func Serve() {
-	port := "8083"
+	port := "8080"
 	router := initRouter()
 	router.Run(":" + port)
 	fmt.Println("Server is running on port " + port)
