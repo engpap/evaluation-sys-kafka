@@ -1,47 +1,45 @@
-Source: https://docs.confluent.io/kafka-clients/go/current/overview.html
-
 # Prerequisites
-Docker Desktop
+- Docker Desktop
+- Confluent CLI
 
-# Instructions
-Init the project
-`go mod init evaluation-sys-kafka`
+# How to run the backend microservices
+## Locally
+Run:
+```
+./scripts/run-local.sh
+```
+This script will start the Kafka broker and create the necessary topics. It will also start the producer and consumer applications by launching 4 microservices on separate terminals.
 
-Download
-`go get github.com/confluentinc/confluent-kafka-go/kafka`
+## Locally on Docker
+Run:
+```
+docker build -f cmd/course-service/Dockerfile -t course-service .
+docker run -p 8090:8090 course-service
+```
+```
+docker build -f cmd/project-service/Dockerfile -t project-service .
+docker run -p 8091:8091 project-service
+```
+```
+docker build -f cmd/register-service/Dockerfile -t register-service .
+docker run -p 8092:8092 register-service
+```
+```
+docker build -f cmd/user-service/Dockerfile -t user-service .
+docker run -p 8093:8093 user-service
+```
 
-Install Confluent CLI
-`brew install confluentinc/tap/cli`
+## Remotely on AWS
+### Deployment on AWS
+Run:
+```
+./scripts/zip-services.sh
+```
+This script will zip the services with their dependencies. Login to your AWS account and upload the zip files to the Elastic Beanstalk environment.
 
-Start the Kafka broker
-`confluent local kafka start`
-
-Note the Plaintext Ports printed in your terminal; paste the following configuration data into a file named getting-started.properties, substituting the plaintext port(s) output.
-`bootstrap.servers=localhost:<PLAINTEXT PORTS>`
-
-Create a topic
-`confluent local kafka topic create <topic_name>`
-
-Compile producer (assuming course-service is the producer)
-`go build -o out/producer ./cmd/course-service`
-
-Compile consumer (assuming user-service is the producer)
-`go build -o out/consumer ./cmd/user-service`
-
-Run producer
-`./out/producer getting-started.properties`
-
-Run consumer
-`./out/consumer getting-started.properties`
-
-Type Ctrl-C to terminate consumer application
-
-Shut down Kafka when you are done with it
-`confluent local kafka stop`
-
-
-# Nice to have
-Set up debugging in VS Code: https://github.com/golang/vscode-go/wiki/debugging
-
-# To run the frontend
+# How to run the CLI frontend
+Make sure to set the boolean variable `debug` in the CLI app to `true` if you want to run the project locally. If you want to run the project on AWS, set the variable to `false`.
+Then run:
+```
 go run cmd/cli-frontend/main.go
+```
