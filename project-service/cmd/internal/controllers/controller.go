@@ -23,6 +23,7 @@ type Controller struct {
 	Projects    []models.Project
 	Submissions []models.Submission
 	Grades      []models.Grade
+	Professors  []models.Professor
 }
 
 func (c *Controller) CreateProject(context *gin.Context) {
@@ -148,6 +149,18 @@ func (c *Controller) GradeProjectSolution(context *gin.Context) {
 			context.JSON(http.StatusConflict, gin.H{"error": "Grade with such ID already present or submission already graded"})
 			return
 		}
+	}
+	// check whether professor exists
+	professorFound := false
+	for _, professor := range c.Professors {
+		if professor.ID == request.ProfessorID {
+			professorFound = true
+			break
+		}
+	}
+	if !professorFound {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Professor does not exist"})
+		return
 	}
 	err := kafkaWrapper.ProduceMessage(c.Producer, "add", "grade", request)
 	if err != nil {
@@ -297,6 +310,28 @@ func (c *Controller) saveGradeInMemory(data interface{}) {
 		fmt.Println("In-Memory Grades: ", c.Grades)
 	} else {
 		fmt.Printf("Error: data cannot be converted to Grade\n")
+	}
+}
+
+func (c *Controller) UpdateProfessorInMemory(action_type string, data interface{}) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if action_type == "add" {
+		c.saveProfessorInMemory(data)
+	} else {
+		fmt.Printf("Invalid action type: %s\n", action_type)
+	}
+}
+
+func (c *Controller) saveProfessorInMemory(data interface{}) {
+	if professorMap, ok := data.(map[string]interface{}); ok {
+		professor := models.Professor{
+			ID: fmt.Sprint(professorMap["id"]),
+		}
+		c.Professors = append(c.Professors, professor)
+		fmt.Println("In-Memory Professors: ", c.Professors)
+	} else {
+		fmt.Printf("Error: data cannot be converted to Professor\n")
 	}
 }
 

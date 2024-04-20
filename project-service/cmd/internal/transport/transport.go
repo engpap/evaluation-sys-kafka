@@ -34,6 +34,7 @@ func initRouter() *gin.Engine {
 	// consumes on events created by other services
 	go kafkaWrapper.CreateConsumer("course", projectController.UpdateCourseInMemory, "project-service")
 	go kafkaWrapper.CreateConsumer("enrollment", projectController.UpdateEnrollmentInMemory, "project-service")
+	go kafkaWrapper.CreateConsumer("professor", projectController.UpdateProfessorInMemory, "project-service")
 	// consumes on events it creates
 	go kafkaWrapper.CreateConsumer("project", projectController.UpdateProjectInMemory, "project-service")
 	go kafkaWrapper.CreateConsumer("submission", projectController.UpdateSubmissionInMemory, "project-service")
