@@ -3,6 +3,7 @@
 - Confluent CLI
 
 # How to run the backend microservices
+Make sure to set the boolean variable debug in the services to true if you want to run the project locally. If you want to run the project on AWS, set the variable to false. You can find this variable in the transport.go file of each service. If debug is set to true and the services are running on AWS, they won't be reachable from the CLI frontend because they will run on a port different from 8080, which is not what AWS expects. As a result, attempting to connect to them would lead to a 502 Bad Gateway error.
 ## Locally
 Run:
 ```

@@ -10,7 +10,7 @@ import (
 )
 
 func Serve() {
-	debug := true
+	debug := false
 	port := "8080"
 	if debug {
 		port = "8091"

@@ -19,7 +19,7 @@ const (
 	DebugUserServiceURL = "http://localhost:8093"
 )
 
-const debug = true
+const debug = false
 
 func init() {
 	if debug {
