@@ -44,3 +44,6 @@ Then run:
 ```
 go run cmd/cli-frontend/main.go
 ```
+
+# Observation
+The package [kafka-wrapper-go](https://github.com/engpap/kafka-wrapper-go) is part of this project. It is a wrapper around the confluent-kafka-go library. It is used to simplify the Kafka producer and consumer applications. The wrapper provides a simple API to interact with Kafka topics and provides a fault recovery functionality. The wrapper is used in the producer and consumer applications of the project. 
