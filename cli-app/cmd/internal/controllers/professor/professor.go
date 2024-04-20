@@ -66,7 +66,7 @@ func GradeProjectSolution(professorID string, args []string) {
 		}
 	}
 	if courseID == "" || projectID == "" || submissionID == "" || gradeID == "" || grade == "" {
-		color.Yellow("Usage: grade --course-id=<id> --proj-id=<id> --sub-id=<id> --id=<grade-id> --grade=<grade>\n")
+		color.Yellow("Usage: grade --course-id=<id> --proj-id=<id> --sub-id=<id> --grade-id=<grade-id> --grade=<grade>\n")
 		return
 	}
 	body := strings.NewReader(fmt.Sprintf(`{"id": "%s", "professor_id": "%s", "grade": "%s"}`, gradeID, professorID, grade))
@@ -84,7 +84,7 @@ func GradeProjectSolution(professorID string, args []string) {
 	}
 }
 
-// get-subs
+// get-sub
 // /courses/:course-id/projects/:project-id/submissions
 func GetProjectSubmissions(args []string) {
 	var courseID, projectID string

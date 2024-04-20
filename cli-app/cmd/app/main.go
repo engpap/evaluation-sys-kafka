@@ -89,8 +89,8 @@ func main() {
 	} else if role == "professor" {
 		color.Cyan("get-courses")
 		color.Cyan("create-project --id=<id> --course-id=<course-id> --name=<project-name>")
-		color.Cyan("get-subs --course-id=<id> --project-id=<id>")
-		color.Cyan("grade --course-id=<id> --proj-id=<id> --sub-id=<id> --id=<grade-id> --grade=<grade>")
+		color.Cyan("get-sub --course-id=<id> --project-id=<id>")
+		color.Cyan("grade --course-id=<id> --proj-id=<id> --sub-id=<id> --grade-id=<grade-id> --grade=<grade>")
 	} else {
 		color.Red("Invalid role. Try again")
 	}
@@ -169,7 +169,7 @@ func handleProfessorInput(command string, args []string) {
 		common.GetCourses()
 	case "create-project":
 		professor.CreateProject(args)
-	case "get-subs":
+	case "get-sub":
 		professor.GetProjectSubmissions(args)
 	case "grade":
 		professor.GradeProjectSolution(userID, args)
