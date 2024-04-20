@@ -5,9 +5,11 @@ import (
 	"eval-sys-registration-service/cmd/internal/models"
 	"fmt"
 	"os"
+	"sync"
 )
 
 type Controller struct {
+	mu          sync.Mutex
 	Courses     []models.Course
 	Projects    []models.Project
 	Grades      []models.Grade
@@ -15,6 +17,9 @@ type Controller struct {
 }
 
 func (c *Controller) UpdateCourseInMemory(action_type string, data interface{}) {
+	fmt.Printf("UpdateCourseInMemory > action_type: %s\n", action_type)
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if action_type == "add" {
 		c.saveCourseInMemory(data)
 	} else {
@@ -36,6 +41,8 @@ func (c *Controller) saveCourseInMemory(data interface{}) {
 }
 
 func (c *Controller) UpdateProjectInMemory(action_type string, data interface{}) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if action_type == "add" {
 		c.saveProjectInMemory(data)
 	} else {
@@ -58,6 +65,8 @@ func (c *Controller) saveProjectInMemory(data interface{}) {
 }
 
 func (c *Controller) UpdateSubmissionInMemory(action_type string, data interface{}) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if action_type == "add" {
 		c.saveSubmissionInMemory(data)
 	} else {
@@ -81,6 +90,8 @@ func (c *Controller) saveSubmissionInMemory(data interface{}) {
 }
 
 func (c *Controller) UpdateGradeInMemory(action_type string, data interface{}) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if action_type == "add" {
 		c.saveGradeInMemory(data)
 	} else {

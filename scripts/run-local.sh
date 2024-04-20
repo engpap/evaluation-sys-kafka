@@ -26,7 +26,7 @@ read -p "Enter Kafka Plaintext Ports: " kafka_port
 echo "bootstrap.servers=localhost:$kafka_port" > getting-started.properties
 
 echo "Creating Kafka topics..."
-declare -a topic_names=("course" "student" "project" "submission" "grade" "enrollment")
+declare -a topic_names=("course" "student" "professor" "project" "submission" "grade" "enrollment")
 for topic_name in "${topic_names[@]}"
 do
   confluent local kafka topic create $topic_name
@@ -44,11 +44,12 @@ case "$(uname)" in "Linux")
     xterm -e "./out/user getting-started.properties" &
     xterm -e "./out/project getting-started.properties" &
     xterm -e "./out/course getting-started.properties" &
+    xterm -e "./out/registration getting-started.properties" &
 ;;
 "Darwin")
     osascript -e 'tell application "Terminal" to do script "cd '$(pwd)' && ./out/user getting-started.properties"'
     osascript -e 'tell application "Terminal" to do script "cd '$(pwd)' && ./out/project getting-started.properties"'
-    osascript -e 'tell application "Terminal" to do script "cxd '$(pwd)' && ./out/course getting-started.properties"'
+    osascript -e 'tell application "Terminal" to do script "cd '$(pwd)' && ./out/course getting-started.properties"'
     osascript -e 'tell application "Terminal" to do script "cd '$(pwd)' && ./out/registration getting-started.properties"'
   ;;
 *)

@@ -10,7 +10,11 @@ import (
 )
 
 func Serve() {
+	debug := true
 	port := "8080"
+	if debug {
+		port = "8091"
+	}
 	router := initRouter()
 	router.Run(":" + port)
 	fmt.Println("Server is running on port " + port)
@@ -27,7 +31,13 @@ func initRouter() *gin.Engine {
 	projectController := controllers.Controller{Producer: producer}
 	kafkaWrapper.SetupCloseProducerHandler(producer)
 
-	go kafkaWrapper.CreateConsumer("course", projectController.UpdateCourseInMemory)
+	// consumes on events created by other services
+	go kafkaWrapper.CreateConsumer("course", projectController.UpdateCourseInMemory, "project-service")
+	go kafkaWrapper.CreateConsumer("enrollment", projectController.UpdateEnrollmentInMemory, "project-service")
+	// consumes on events it creates
+	go kafkaWrapper.CreateConsumer("project", projectController.UpdateProjectInMemory, "project-service")
+	go kafkaWrapper.CreateConsumer("submission", projectController.UpdateSubmissionInMemory, "project-service")
+	go kafkaWrapper.CreateConsumer("grade", projectController.UpdateGradeInMemory, "project-service")
 
 	router.POST("/courses/:course-id/projects/create", projectController.CreateProject)                                              // FE done for prof
 	router.POST("/courses/:course-id/projects/:project-id/submit", projectController.SubmitProjectSolution)                          // FE done for stud

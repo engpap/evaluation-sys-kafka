@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"eval-sys-project-service/cmd/internal/models"
+	"sync"
 
 	kafkaWrapper "github.com/engpap/kafka-wrapper-go/pkg"
 
@@ -14,15 +15,19 @@ import (
 )
 
 type Controller struct {
-	Producer    *kafka.Producer
+	mu       sync.Mutex
+	Producer *kafka.Producer
+	// In-memory data structures that will be populated through consuming
+	Courses     []models.Course
+	Enrollments []models.Enrollment
 	Projects    []models.Project
 	Submissions []models.Submission
 	Grades      []models.Grade
-	// In-memory data structures that will be populated through consuming
-	Courses []models.Course
 }
 
 func (c *Controller) CreateProject(context *gin.Context) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	var request models.Project
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -49,8 +54,6 @@ func (c *Controller) CreateProject(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "You cannot create a project for a course that does not exists"})
 		return
 	}
-	c.Projects = append(c.Projects, request)
-	fmt.Println("(CreateProject) > In-memory Projects: ", c.Projects)
 	err := kafkaWrapper.ProduceMessage(c.Producer, "add", "project", request)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -63,6 +66,8 @@ func (c *Controller) CreateProject(context *gin.Context) {
 
 // POST http://{{host}}/projects/:project-id/submit
 func (c *Controller) SubmitProjectSolution(context *gin.Context) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	var request models.Submission
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -85,9 +90,18 @@ func (c *Controller) SubmitProjectSolution(context *gin.Context) {
 			return
 		}
 	}
-	// update in-memory state
-	c.Submissions = append(c.Submissions, request)
-	fmt.Println("(SubmitProjectSolution) > In-memory Submission: ", c.Submissions)
+	// allow submission only by enrolled students
+	studentEnrolled := false
+	for _, enrollment := range c.Enrollments {
+		if enrollment.StudentID == request.StudentID && enrollment.CourseID == courseID {
+			studentEnrolled = true
+			break
+		}
+	}
+	if !studentEnrolled {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Student not enrolled in course"})
+		return
+	}
 	err := kafkaWrapper.ProduceMessage(c.Producer, "add", "submission", request)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -100,6 +114,8 @@ func (c *Controller) SubmitProjectSolution(context *gin.Context) {
 
 // TODO: check whether student and project exists before storing in memory
 func (c *Controller) GradeProjectSolution(context *gin.Context) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	courseID := context.Param("course-id")
 	projectID := context.Param("project-id")
 	submissionID := context.Param("submission-id")
@@ -133,8 +149,6 @@ func (c *Controller) GradeProjectSolution(context *gin.Context) {
 			return
 		}
 	}
-	c.Grades = append(c.Grades, request)
-	fmt.Println("(GradeProjectSolution) > In-memory Grades: ", c.Grades)
 	err := kafkaWrapper.ProduceMessage(c.Producer, "add", "grade", request)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -145,7 +159,14 @@ func (c *Controller) GradeProjectSolution(context *gin.Context) {
 	context.JSON(http.StatusCreated, gin.H{"message": fmt.Sprintf("Submission %s graded successfully with %s", request.SubmissionID, request.Grade)})
 }
 
+//  ------------------------------------------------------------------------------------------
+//  ------------------------------------------------------------------------------------------
+// CALLBACK FUNCTIONS
+
 func (c *Controller) UpdateCourseInMemory(action_type string, data interface{}) {
+	fmt.Printf("UpdateCourseInMemory > action_type: %s\n", action_type)
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if action_type == "add" {
 		c.saveCourseInMemory(data)
 	} else if action_type == "delete" {
@@ -156,7 +177,6 @@ func (c *Controller) UpdateCourseInMemory(action_type string, data interface{}) 
 }
 
 func (c *Controller) saveCourseInMemory(data interface{}) {
-
 	if courseMap, ok := data.(map[string]interface{}); ok {
 		course := models.Course{
 			ID:   fmt.Sprint(courseMap["id"]),
@@ -183,9 +203,110 @@ func (c *Controller) deleteCourseInMemory(data interface{}) {
 	}
 }
 
+func (c *Controller) UpdateEnrollmentInMemory(action_type string, data interface{}) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if action_type == "add" {
+		c.saveEnrollmentInMemory(data)
+	} else {
+		fmt.Printf("Invalid action type: %s\n", action_type)
+	}
+}
+
+func (c *Controller) saveEnrollmentInMemory(data interface{}) {
+	if enrollmentMap, ok := data.(map[string]interface{}); ok {
+		enrollment := models.Enrollment{
+			StudentID: fmt.Sprint(enrollmentMap["student_id"]),
+			CourseID:  fmt.Sprint(enrollmentMap["course_id"]),
+		}
+		c.Enrollments = append(c.Enrollments, enrollment)
+		fmt.Println("In-Memory Enrollments: ", c.Enrollments)
+	} else {
+		fmt.Printf("Error: data cannot be converted to Enrollment\n")
+	}
+}
+
+func (c *Controller) UpdateProjectInMemory(action_type string, data interface{}) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if action_type == "add" {
+		c.saveProjectInMemory(data)
+	} else {
+		fmt.Printf("Invalid action type: %s\n", action_type)
+	}
+}
+
+func (c *Controller) saveProjectInMemory(data interface{}) {
+	if projectMap, ok := data.(map[string]interface{}); ok {
+		project := models.Project{
+			ID:       fmt.Sprint(projectMap["id"]),
+			Name:     fmt.Sprint(projectMap["name"]),
+			CourseID: fmt.Sprint(projectMap["course_id"]),
+		}
+		c.Projects = append(c.Projects, project)
+		fmt.Println("In-Memory Projects: ", c.Projects)
+	} else {
+		fmt.Printf("Error: data cannot be converted to Project\n")
+	}
+}
+
+func (c *Controller) UpdateSubmissionInMemory(action_type string, data interface{}) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if action_type == "add" {
+		c.saveSubmissionInMemory(data)
+	} else {
+		fmt.Printf("Invalid action type: %s\n", action_type)
+	}
+}
+
+func (c *Controller) saveSubmissionInMemory(data interface{}) {
+	if submissionMap, ok := data.(map[string]interface{}); ok {
+		submission := models.Submission{
+			ID:        fmt.Sprint(submissionMap["id"]),
+			StudentID: fmt.Sprint(submissionMap["student_id"]),
+			ProjectID: fmt.Sprint(submissionMap["project_id"]),
+			Solution:  fmt.Sprint(submissionMap["solution"]),
+		}
+		c.Submissions = append(c.Submissions, submission)
+		fmt.Println("In-Memory Submissions: ", c.Submissions)
+	} else {
+		fmt.Printf("Error: data cannot be converted to Submission\n")
+	}
+}
+
+func (c *Controller) UpdateGradeInMemory(action_type string, data interface{}) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if action_type == "add" {
+		c.saveGradeInMemory(data)
+	} else {
+		fmt.Printf("Invalid action type: %s\n", action_type)
+	}
+}
+
+func (c *Controller) saveGradeInMemory(data interface{}) {
+	if gradeMap, ok := data.(map[string]interface{}); ok {
+		grade := models.Grade{
+			ID:           fmt.Sprint(gradeMap["id"]),
+			SubmissionID: fmt.Sprint(gradeMap["submission_id"]),
+			ProfessorID:  fmt.Sprint(gradeMap["professor_id"]),
+			Grade:        fmt.Sprint(gradeMap["grade"]),
+		}
+		c.Grades = append(c.Grades, grade)
+		fmt.Println("In-Memory Grades: ", c.Grades)
+	} else {
+		fmt.Printf("Error: data cannot be converted to Grade\n")
+	}
+}
+
+// ------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------
 // NON-REQUIRED FUNCTIONS BY THE SPECS
 
 func (c *Controller) GetCourseProjects(context *gin.Context) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	courseID := context.Param("course-id")
 	var projects []models.Project
 	for _, project := range c.Projects {
@@ -197,6 +318,8 @@ func (c *Controller) GetCourseProjects(context *gin.Context) {
 }
 
 func (c *Controller) GetProjectSubmissions(context *gin.Context) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	courseID := context.Param("course-id")
 	projectID := context.Param("project-id")
 	// check whether project id is under specified course
@@ -217,6 +340,8 @@ func (c *Controller) GetProjectSubmissions(context *gin.Context) {
 }
 
 func (c *Controller) GetSubmissionGrades(context *gin.Context) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	courseID := context.Param("course-id")
 	projectID := context.Param("project-id")
 	submissionID := context.Param("submission-id")

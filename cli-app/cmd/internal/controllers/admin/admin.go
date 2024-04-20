@@ -25,7 +25,7 @@ func CreateCourse(args []string) {
 		return
 	}
 	body := strings.NewReader(fmt.Sprintf(`{"id": "%s", "name": "%s"}`, id, name))
-	resp, err := http.Post(config.CourseServiceURL+"/courses/create", "application/json", body)
+	resp, err := http.Post(config.URLs.CourseServiceURL+"/courses/create", "application/json", body)
 	if err != nil {
 		color.Red("Error creating course: %v\n", err)
 		return
@@ -53,7 +53,7 @@ func DeleteCourse(args []string) {
 	}
 	// endpoint is -> /courses/:course-id/delete
 	// Creating the request
-	req, err := http.NewRequest(http.MethodDelete, config.CourseServiceURL+"/courses/"+courseID+"/delete", nil)
+	req, err := http.NewRequest(http.MethodDelete, config.URLs.CourseServiceURL+"/courses/"+courseID+"/delete", nil)
 	if err != nil {
 		color.Red("Error creating request: %v\n", err)
 		return
@@ -88,7 +88,7 @@ func CreateStudent(args []string) {
 		return
 	}
 	body := strings.NewReader(fmt.Sprintf(`{"id": "%s"}`, id))
-	resp, err := http.Post(config.UserServiceURL+"/users/student/create", "application/json", body)
+	resp, err := http.Post(config.URLs.UserServiceURL+"/users/student/create", "application/json", body)
 	if err != nil {
 		color.Red("Error creating student: %v\n", err)
 		return
@@ -116,7 +116,7 @@ func CreateProfessor(args []string) {
 		return
 	}
 	body := strings.NewReader(fmt.Sprintf(`{"id": "%s"}`, id))
-	resp, err := http.Post(config.UserServiceURL+"/users/professor/create", "application/json", body)
+	resp, err := http.Post(config.URLs.UserServiceURL+"/users/professor/create", "application/json", body)
 	if err != nil {
 		color.Red("Error creating professor: %v\n", err)
 		return

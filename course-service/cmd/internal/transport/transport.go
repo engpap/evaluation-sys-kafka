@@ -10,7 +10,11 @@ import (
 )
 
 func Serve() {
+	debug := true
 	port := "8080"
+	if debug {
+		port = "8090"
+	}
 	router := initRouter()
 	router.Run(":" + port)
 	fmt.Println("Server is running on port " + port)
@@ -26,14 +30,17 @@ func initRouter() *gin.Engine {
 	// producer setup
 	courseController := controllers.Controller{Producer: producer}
 	kafkaWrapper.SetupCloseProducerHandler(producer)
-	// consumers setup
-	go kafkaWrapper.CreateConsumer("student", courseController.UpdateStudentInMemory)
+	// consumes on events it creates
+	go kafkaWrapper.CreateConsumer("student", courseController.UpdateStudentInMemory, "course-service")
+	// consumes on events created by other services
+	go kafkaWrapper.CreateConsumer("course", courseController.UpdateCourseInMemory, "course-service")
+	go kafkaWrapper.CreateConsumer("enrollment", courseController.UpdateEnrollmentInMemory, "course-service")
 
 	// routes
-	router.GET("/courses", courseController.GetCourses)                        // FE done 4 everybody
-	router.POST("/courses/create", courseController.CreateCourse)              // FE done for admin
-	router.DELETE("/courses/:course-id/delete", courseController.DeleteCourse) // FE done for admin
-	router.POST("/courses/enroll", courseController.EnrollStudentInCourse)     // FE done for stud
+	router.GET("/courses", courseController.GetCourses)                               // FE done 4 everybody
+	router.POST("/courses/create", courseController.CreateCourse)                     // FE done for admin
+	router.DELETE("/courses/:course-id/delete", courseController.DeleteCourse)        // FE done for admin
+	router.POST("/courses/:course-id/enroll", courseController.EnrollStudentInCourse) // FE done for stud
 
 	return router
 }

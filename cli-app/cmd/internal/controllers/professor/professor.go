@@ -30,7 +30,7 @@ func CreateProject(args []string) {
 		return
 	}
 	body := strings.NewReader(fmt.Sprintf(`{"id": "%s", "name": "%s"}`, projectID, projectName))
-	resp, err := http.Post(config.ProjectServiceURL+"/courses/"+courseID+"/projects/create", "application/json", body)
+	resp, err := http.Post(config.URLs.ProjectServiceURL+"/courses/"+courseID+"/projects/create", "application/json", body)
 	if err != nil {
 		color.Red("Error creating project: %v\n", err)
 		return
@@ -70,7 +70,7 @@ func GradeProjectSolution(professorID string, args []string) {
 		return
 	}
 	body := strings.NewReader(fmt.Sprintf(`{"id": "%s", "professor_id": "%s", "grade": "%s"}`, gradeID, professorID, grade))
-	resp, err := http.Post(config.ProjectServiceURL+"/courses/"+courseID+"/projects/"+projectID+"/submissions/"+submissionID+"/grade", "application/json", body)
+	resp, err := http.Post(config.URLs.ProjectServiceURL+"/courses/"+courseID+"/projects/"+projectID+"/submissions/"+submissionID+"/grade", "application/json", body)
 	if err != nil {
 		color.Red("Error grading project: %v\n", err)
 		return
@@ -100,7 +100,7 @@ func GetProjectSubmissions(args []string) {
 		color.Yellow("Usage: get-sub --course-id=<id> --project-id=<id>\n")
 		return
 	}
-	resp, err := http.Get(config.ProjectServiceURL + "/courses/" + courseID + "/projects/" + projectID + "/submissions")
+	resp, err := http.Get(config.URLs.ProjectServiceURL + "/courses/" + courseID + "/projects/" + projectID + "/submissions")
 	if err != nil {
 		color.Red("Error fetching submissions: %v\n", err)
 		return

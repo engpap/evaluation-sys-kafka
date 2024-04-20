@@ -9,7 +9,7 @@ import (
 )
 
 func GetCourses() {
-	resp, err := http.Get(config.CourseServiceURL + "/courses")
+	resp, err := http.Get(config.URLs.CourseServiceURL + "/courses")
 	if err != nil {
 		color.Red("Error fetching courses: %v\n", err)
 		return

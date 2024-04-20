@@ -22,8 +22,8 @@ func EnrollStudentInCourse(studentID string, args []string) {
 		color.Yellow("Usage: enroll --course-id=<id>\n")
 		return
 	}
-	body := strings.NewReader(fmt.Sprintf(`{"student_id": "%s", "course_id": "%s"}`, studentID, courseID))
-	resp, err := http.Post(config.CourseServiceURL+"/courses/enroll", "application/json", body)
+	body := strings.NewReader(fmt.Sprintf(`{"student_id": "%s"}`, studentID))
+	resp, err := http.Post(config.URLs.CourseServiceURL+"/courses/"+courseID+"/enroll", "application/json", body)
 	if err != nil {
 		color.Red("Error enrolling student in course: %v\n", err)
 		return
@@ -56,11 +56,11 @@ func SubmitProjectSolution(studentID string, args []string) {
 		}
 	}
 	if courseID == "" || projectID == "" || solution == "" {
-		color.Yellow("Usage: submit --course-id=<id> --project-id=<id> --solution=<solution>\n")
+		color.Yellow("Usage: submit --course-id=<id> --project-id=<id> --submission-id=<id> --solution=<solution>\n")
 		return
 	}
 	body := strings.NewReader(fmt.Sprintf(`{"id": "%s", "student_id": "%s", "solution": "%s"}`, submissionID, studentID, solution))
-	resp, err := http.Post(config.ProjectServiceURL+"/courses/"+courseID+"/projects/"+projectID+"/submit", "application/json", body)
+	resp, err := http.Post(config.URLs.ProjectServiceURL+"/courses/"+courseID+"/projects/"+projectID+"/submit", "application/json", body)
 	if err != nil {
 		color.Red("Error submitting project solution: %v\n", err)
 		return
@@ -84,7 +84,7 @@ func GetCourseProjects(args []string) {
 		color.Yellow("Usage: get-projects --course-id=<id>\n")
 		return
 	}
-	resp, err := http.Get(config.ProjectServiceURL + "/courses/" + courseID + "/projects")
+	resp, err := http.Get(config.URLs.ProjectServiceURL + "/courses/" + courseID + "/projects")
 	if err != nil {
 		color.Red("Error getting projects: %v\n", err)
 		return
@@ -116,7 +116,7 @@ func GetProjectSubmissions(args []string) {
 		color.Yellow("Usage: get-submissions --course-id=<id> --project-id=<id>\n")
 		return
 	}
-	resp, err := http.Get(config.ProjectServiceURL + "/courses/" + courseID + "/projects/" + projectID + "/submissions")
+	resp, err := http.Get(config.URLs.ProjectServiceURL + "/courses/" + courseID + "/projects/" + projectID + "/submissions")
 	if err != nil {
 		color.Red("Error getting submissions: %v\n", err)
 		return
@@ -151,7 +151,7 @@ func GetSubmissionGrades(args []string) {
 		color.Yellow("Usage: get-grades --course-id=<id> --project-id=<id> --submission-id=<id>\n")
 		return
 	}
-	resp, err := http.Get(config.ProjectServiceURL + "/courses/" + courseID + "/projects/" + projectID + "/submissions/" + submissionID + "/grades")
+	resp, err := http.Get(config.URLs.ProjectServiceURL + "/courses/" + courseID + "/projects/" + projectID + "/submissions/" + submissionID + "/grades")
 	if err != nil {
 		color.Red("Error getting grades: %v\n", err)
 		return

@@ -4,6 +4,7 @@ go 1.21.5
 
 require (
 	github.com/confluentinc/confluent-kafka-go/v2 v2.3.0
+	github.com/engpap/kafka-wrapper-go v1.0.2
 	github.com/gin-gonic/gin v1.9.1
 )
 
