@@ -42,7 +42,7 @@ This script will zip the services with their dependencies. Login to your AWS acc
 Make sure to set the boolean variable `debug` in the CLI app to `true` if you want to run the project locally. If you want to run the project on AWS, set the variable to `false`.
 Then run:
 ```
-go run cmd/cli-frontend/main.go
+go run cli-app/cmd/app/main.go
 ```
 
 # Observation
