@@ -168,3 +168,22 @@ func GetSubmissionGrades(args []string) {
 		}
 	}
 }
+
+func GetCompletedCourses() {
+	resp, err := http.Get(config.URLs.UserServiceURL + "/users/student/completed-courses")
+	if err != nil {
+		color.Red("Error getting completed courses: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		color.Red("Failed to get completed courses: %s\n", resp.Status)
+		return
+	} else {
+		color.Green("Completed courses:")
+		scanner := bufio.NewScanner(resp.Body)
+		for scanner.Scan() {
+			color.Green(scanner.Text())
+		}
+	}
+}

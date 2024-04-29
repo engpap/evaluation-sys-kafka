@@ -33,9 +33,12 @@ func initRouter() *gin.Engine {
 	// consumes on events it creates
 	go kafkaWrapper.CreateConsumer("student", userController.UpdateStudentInMemory, "user-service")
 	go kafkaWrapper.CreateConsumer("professor", userController.UpdateProfessorInMemory, "user-service")
+	// consumes on events other services create
+	go kafkaWrapper.CreateConsumer("completed", userController.UpdateCompletedCoursesInMemory, "user-service")
 
 	router.POST("/users/student/create", userController.CreateStudent)     // FE done for admin
 	router.POST("/users/professor/create", userController.CreateProfessor) // FE done for admin
+	router.GET("/users/student/completed-courses", userController.GetCompletedCourses)
 
 	return router
 }

@@ -23,13 +23,20 @@ func Serve() {
 func initRouter() *gin.Engine {
 	router := gin.Default()
 
-	registrationController := controllers.Controller{}
+	producer, err := kafkaWrapper.CreateProducer()
+	if err != nil {
+		panic(err)
+	}
+
+	registrationController := controllers.Controller{Producer: producer}
+	kafkaWrapper.SetupCloseProducerHandler(producer)
 
 	// consumes on events created by other services
 	go kafkaWrapper.CreateConsumer("course", registrationController.UpdateCourseInMemory, "registration-service")
 	go kafkaWrapper.CreateConsumer("project", registrationController.UpdateProjectInMemory, "registration-service")
 	go kafkaWrapper.CreateConsumer("grade", registrationController.UpdateGradeInMemory, "registration-service")
 	go kafkaWrapper.CreateConsumer("submission", registrationController.UpdateSubmissionInMemory, "registration-service")
+	go kafkaWrapper.CreateConsumer("completed", registrationController.UpdateCompletedCoursesInMemory, "registration-service")
 
 	return router
 }

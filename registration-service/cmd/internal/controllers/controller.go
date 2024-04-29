@@ -6,14 +6,19 @@ import (
 	"fmt"
 	"os"
 	"sync"
+
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	kafkaWrapper "github.com/engpap/kafka-wrapper-go/pkg"
 )
 
 type Controller struct {
-	mu          sync.Mutex
-	Courses     []models.Course
-	Projects    []models.Project
-	Grades      []models.Grade
-	Submissions []models.Submission
+	mu               sync.Mutex
+	Producer         *kafka.Producer
+	Courses          []models.Course
+	Projects         []models.Project
+	Grades           []models.Grade
+	Submissions      []models.Submission
+	CompletedCourses []models.CompletedCourse
 }
 
 func (c *Controller) UpdateCourseInMemory(action_type string, data interface{}) {
@@ -124,9 +129,38 @@ func (c *Controller) saveGradeInMemory(data interface{}) {
 		}
 		if c.isCourseCompleted(studentID, courseID) {
 			fmt.Println("Course is completed for student: ", studentID)
+			var completedCourse models.CompletedCourse
+			completedCourse.CourseID = courseID
+			completedCourse.StudentID = studentID
+			err := kafkaWrapper.ProduceMessage(c.Producer, "add", "completed", completedCourse)
+			if err != nil {
+				fmt.Printf("Error: failed to produce message to topic 'completed'\n")
+			}
 		}
 	} else {
 		fmt.Printf("Error: data cannot be converted to Grade\n")
+	}
+}
+func (c *Controller) UpdateCompletedCoursesInMemory(action_type string, data interface{}) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if action_type == "add" {
+		c.saveCompletedCoursesInMemory(data)
+	} else {
+		fmt.Printf("Error: action type %s not supported\n", action_type)
+	}
+}
+
+func (c *Controller) saveCompletedCoursesInMemory(data interface{}) {
+	if completedCourseMap, ok := data.(map[string]interface{}); ok {
+		completedCourse := models.CompletedCourse{
+			CourseID:  fmt.Sprint(completedCourseMap["course_id"]),
+			StudentID: fmt.Sprint(completedCourseMap["student_id"]),
+		}
+		c.CompletedCourses = append(c.CompletedCourses, completedCourse)
+		fmt.Println("In-Memory Completed Courses: ", c.CompletedCourses)
+	} else {
+		fmt.Printf("Error: data cannot be converted to CompletedCourse\n")
 	}
 }
 

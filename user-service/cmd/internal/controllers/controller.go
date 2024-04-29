@@ -15,8 +15,9 @@ type Controller struct {
 	mu       sync.Mutex
 	Producer *kafka.Producer
 	// In-memory data structures that will be populated through consuming
-	Students   []models.Student
-	Professors []models.Professor
+	Students         []models.Student
+	Professors       []models.Professor
+	CompletedCourses []models.CompletedCourse
 }
 
 // ASSUMPTION: No authentication; student record is created with a simple POST request
@@ -66,6 +67,12 @@ func (c *Controller) CreateProfessor(context *gin.Context) {
 	context.JSON(http.StatusCreated, gin.H{"message": "Professor created successfully"})
 }
 
+func (c *Controller) GetCompletedCourses(context *gin.Context) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	context.JSON(http.StatusOK, gin.H{"completed_courses": c.CompletedCourses})
+}
+
 // CALLBACK FUNCTIONS
 
 func (c *Controller) UpdateStudentInMemory(action_type string, data interface{}) {
@@ -109,5 +116,28 @@ func (c *Controller) saveProfessorInMemory(data interface{}) {
 		fmt.Println("In-memory Professors: ", c.Professors)
 	} else {
 		fmt.Printf("Error: data cannot be converted to Professor\n")
+	}
+}
+
+func (c *Controller) UpdateCompletedCoursesInMemory(action_type string, data interface{}) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if action_type == "add" {
+		c.saveCompletedCourseInMemory(data)
+	} else {
+		fmt.Printf("Invalid action type: %s\n", action_type)
+	}
+}
+
+func (c *Controller) saveCompletedCourseInMemory(data interface{}) {
+	if completedCourseMap, ok := data.(map[string]interface{}); ok {
+		completedCourse := models.CompletedCourse{
+			CourseID:  fmt.Sprint(completedCourseMap["course_id"]),
+			StudentID: fmt.Sprint(completedCourseMap["student_id"]),
+		}
+		c.CompletedCourses = append(c.CompletedCourses, completedCourse)
+		fmt.Println("In-memory CompletedCourses: ", c.CompletedCourses)
+	} else {
+		fmt.Printf("Error: data cannot be converted to CompletedCourse\n")
 	}
 }

@@ -86,6 +86,7 @@ func main() {
 		color.Cyan("get-course-projects --course-id=<id>")
 		color.Cyan("get-project-submissions --course-id=<id> --project-id=<id>")
 		color.Cyan("get-submission-grades --course-id=<id> --project-id=<id> --submission-id=<id>")
+		color.Cyan("get-completed-courses")
 	} else if role == "professor" {
 		color.Cyan("get-courses")
 		color.Cyan("create-project --id=<id> --course-id=<course-id> --name=<project-name>")
@@ -158,6 +159,8 @@ func handleStudentInput(command string, args []string) {
 		student.GetProjectSubmissions(args)
 	case "get-submission-grades":
 		student.GetSubmissionGrades(args)
+	case "get-completed-courses":
+		student.GetCompletedCourses()
 	default:
 		color.Red("Unknown command: %s\n", command)
 	}
